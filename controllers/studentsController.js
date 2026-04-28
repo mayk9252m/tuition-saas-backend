@@ -41,20 +41,20 @@ const getStudent = async (req, res) => {
 const createStudent = async (req, res) => {
   try {
     const {
-      studentName, fatherName, motherName, class: studentClass,
-      school, whatsappNumber, dateOfJoining, monthlyFees
+      StudentName, FatherName, MotherName, Class: studentClass,
+      School, WhatsAppNumber, DateOfJoining, MonthlyFees
     } = req.body;
 
     const student = new Student({
       userId: req.user._id,
-      studentName,
-      fatherName,
-      motherName,
-      class: studentClass,
-      school,
-      whatsappNumber,
-      dateOfJoining,
-      monthlyFees
+      StudentName,
+      FatherName,
+      MotherName,
+      Class: studentClass,
+      School,
+      WhatsAppNumber,
+      DateOfJoining,
+      MonthlyFees
     });
 
     // Generate fees from joining date to current month
@@ -100,7 +100,7 @@ const updateStudent = async (req, res) => {
       return res.status(404).json({ message: 'Student not found' });
     }
 
-    const allowedFields = ['studentName', 'fatherName', 'motherName', 'class', 'school', 'whatsappNumber', 'monthlyFees'];
+    const allowedFields = ['StudentName', 'FatherName', 'MotherName', 'Class', 'School', 'WhatsAppNumber', 'MonthlyFees'];
     allowedFields.forEach(field => {
       if (req.body[field] !== undefined) {
         student[field] = req.body[field];
