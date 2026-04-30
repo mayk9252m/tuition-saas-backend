@@ -2,19 +2,19 @@ const mongoose = require('mongoose');
 
 const attendanceSchema = new mongoose.Schema({
   date: { type: String, required: true },
-  status: { type: String, enum: ['present', 'absent'],required: true }
+  status: { type: String, enum: ['present', 'absent'], required: true }
 });
 
 const feesHistorySchema = new mongoose.Schema({
-  month: { type: String, required: true }, 
+  month: { type: String, required: true },
   amount: { type: Number, required: true },
-  status: { type: String, enum: ['paid', 'unpaid'],default: 'unpaid' },
+  status: { type: String, enum: ['paid', 'unpaid'], default: 'unpaid' },
   paidDate: { type: Date },
   dueDate: { type: Date }
 });
 
 const testResultSchema = new mongoose.Schema({
-  testdte: { type: String, required: true },        // YYYY-MM-DD
+  testDate: { type: String, required: true },        // YYYY-MM-DD
   subject: { type: String, required: true, trim: true },
   chapterSyllabus: { type: String, required: true, trim: true },
   marksObtained: { type: Number, required: true, min: 0 },
@@ -24,13 +24,13 @@ const testResultSchema = new mongoose.Schema({
 });
 
 const studentSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId,ref: 'User', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   studentName: { type: String, required: [true, 'Student name is required'], trim: true },
   fatherName: { type: String, required: [true, "Father's name is required"], trim: true },
   motherName: { type: String, required: [true, "Mother's name is required"], trim: true },
   class: {
     type: String, required: [true, 'Class is required'],
-    enum: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+    enum: ['1','2','3','4','5','6','7','8','9','10','11','12']
   },
   school: { type: String, required: [true, 'School is required'], trim: true },
   whatsappNumber: { type: String, required: [true, 'WhatsApp number is required'], trim: true },
@@ -43,11 +43,9 @@ const studentSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-// Index for faster queries
 studentSchema.index({ userId: 1 });
 studentSchema.index({ userId: 1, class: 1 });
 
-// Auto-generate monthly fees on save
 studentSchema.methods.generateMonthlyFees = function() {
   const joiningDate = new Date(this.dateOfJoining);
   const currentDate = new Date();
