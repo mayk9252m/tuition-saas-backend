@@ -19,9 +19,9 @@ const parentLogin = async (req, res) => {
         message: 'WhatsApp number and date of joining are required'
       });
     }
-
+    // Clean the number - remove +91, spaces, dashes, etc, and take last 10 digits
     const cleanNumber = whatsappNumber.replace(/[\s\-\+]/g, '').slice(-10);
-
+    // Find student by WhatsApp number and active status
     const student = await Student.findOne({
       whatsappNumber: cleanNumber,
       isActive: true
@@ -32,7 +32,7 @@ const parentLogin = async (req, res) => {
         message: 'Invalid WhatsApp number or Date of Joining'
       });
     }
-
+    // Check date of joining - compare YYYY-MM-DD part only
     const studentJoining = new Date(student.dateOfJoining)
       .toISOString().split('T')[0];
 
