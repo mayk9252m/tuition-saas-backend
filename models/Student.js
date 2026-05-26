@@ -68,4 +68,13 @@ studentSchema.methods.generateMonthlyFees = function() {
   return fees;
 };
 
+studentSchema.pre('save', async function(next) {
+  if (this.isNew && !this.studentId) {
+    const year  = new Date().getFullYear();
+    const count = await mongoose.model('Student').countDocuments({ userId: this.userId });
+    this.studentId = `TP-${year}-${String(count + 1).padStart(4, '0')}`;
+  }
+  next();
+});
+
 module.exports = mongoose.model('Student', studentSchema);
