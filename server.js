@@ -22,6 +22,8 @@ app.use('/api/attendance', require('./routes/attendance'));
 app.use('/api/fees', require('./routes/fees'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/tests', require('./routes/tests'));
+app.use('/api/parent', require('./routes/parent'));
+app.use('/uploads', express.static('uploads')); // Serve static files from uploads directory
 
 // Health check
 app.get('/api/health', (req, res) => {

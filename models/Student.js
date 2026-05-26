@@ -24,6 +24,8 @@ const testResultSchema = new mongoose.Schema({
 });
 
 const studentSchema = new mongoose.Schema({
+  studentId: { type: String, unique: true, sparse: true, trim: true },
+  parentFcmToken: { type: String, default: '' },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   studentName: { type: String, required: [true, 'Student name is required'], trim: true },
   fatherName: { type: String, required: [true, "Father's name is required"], trim: true },
