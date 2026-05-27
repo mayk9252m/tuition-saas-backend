@@ -1,23 +1,10 @@
 const Student = require('../models/Student');
+const { sendToParent } = require('../services/notificationService');
 
 // @desc    Add a test result for a student
 // @route   POST /api/tests/:studentId
 const addTestResult = async (req, res) => {
   try {
-
-    const { sendToParent } = require('../services/notificationService');
-
-    // After student.save():
-    const pct = Math.round((Number(marksObtained) / Number(totalMarks)) * 100);
-    if (student.parentFcmToken) {
-      await sendToParent(
-        student.parentFcmToken,
-        'New Test Result Added',
-        `${student.studentName} scored ${pct}% in ${subject} (${marksObtained}/${totalMarks})`,
-        'test_result'
-      );
-    }
-    
     const { testDate, subject, chapterSyllabus, marksObtained, totalMarks, remarks } = req.body;
 
     if (!testDate || !subject || !chapterSyllabus || marksObtained === undefined || !totalMarks) {
@@ -38,7 +25,29 @@ const addTestResult = async (req, res) => {
     });
 
     await student.save();
-    res.status(201).json({ success: true, message: 'Test result added', testResults: student.testResults });
+
+// Calculate percentage
+const pct = Math.round(
+  (Number(marksObtained) / Number(totalMarks)) * 100
+);
+
+// Send push notification to parent
+if (student.parentFcmToken) {
+
+  await sendToParent(
+    student.parentFcmToken,
+    'New Test Result Added',
+    `${student.studentName} scored ${pct}% in ${subject} (${marksObtained}/${totalMarks})`,
+    'test_result'
+  );
+}
+
+res.status(201).json({
+  success: true,
+  message: 'Test result added',
+  testResults: student.testResults
+});
+
   } catch (error) {
     res.status(500).json({ message: 'Error adding test result', error: error.message });
   }
