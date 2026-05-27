@@ -1,4 +1,5 @@
 const Student = require('../models/Student');
+const { sendToParent } = require('../services/notificationService');
 
 // @desc    Mark attendance for a student
 // @route   POST /api/attendance/:studentId
@@ -30,7 +31,33 @@ const markAttendance = async (req, res) => {
 
     await student.save();
 
-    res.json({ success: true, message: 'Attendance marked successfully', student });
+    // Send push notification to parent
+    if (student.parentFcmToken) {
+
+      const statusText =
+        status === 'present'
+          ? 'Present ✅'
+          : 'Absent ❌';
+
+      const dateText = new Date(date).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short'
+      });
+
+      await sendToParent(
+        student.parentFcmToken,
+        'Attendance Marked',
+        `${student.studentName} was marked ${statusText} on ${dateText}`,
+        'attendance'
+      );
+    }
+
+    res.json({
+      success: true,
+      message: 'Attendance marked successfully',
+      student
+    });
+    
   } catch (error) {
     res.status(500).json({ message: 'Error marking attendance', error: error.message });
   }
