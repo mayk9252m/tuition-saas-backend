@@ -1,21 +1,10 @@
 const Student = require('../models/Student');
+const { sendToParent } = require('../services/notificationService');
 
 // @desc    Update fee status for a student
 // @route   PUT /api/fees/:studentId/:month
 const updateFeeStatus = async (req, res) => {
   try {
-
-    const { sendToParent } = require('../services/notificationService');
-
-  // After saving paid status:
-     if (status === 'paid' && student.parentFcmToken) {
-      await sendToParent(
-        student.parentFcmToken,
-        'Fee Payment Confirmed',
-        `Fee of ₹${feeRecord.amount} for ${month} has been received. Thank you!`,
-        'fee_paid'
-      );
-    }
     const { studentId, month } = req.params;
     const { status } = req.body;
 
@@ -42,7 +31,23 @@ const updateFeeStatus = async (req, res) => {
 
     await student.save();
 
-    res.json({ success: true, message: 'Fee status updated', student });
+// Send push notification after successful payment
+if (status === 'paid' && student.parentFcmToken) {
+
+  await sendToParent(
+    student.parentFcmToken,
+    'Fee Payment Confirmed',
+    `Fee of ₹${feeRecord.amount} for ${month} has been received. Thank you!`,
+    'fee_paid'
+  );
+}
+
+res.json({
+  success: true,
+  message: 'Fee status updated',
+  student
+});
+
   } catch (error) {
     res.status(500).json({ message: 'Error updating fee status', error: error.message });
   }
