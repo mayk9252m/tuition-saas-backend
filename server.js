@@ -4,6 +4,9 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const cron = require('node-cron');
 
+const { sendToMultiple } = require('./services/notificationService');
+
+
 dotenv.config();
 
 const app = express();
@@ -46,12 +49,47 @@ mongoose.connect(process.env.MONGODB_URI)
       console.log(`🚀 Server running on port ${PORT}`);
     });
 
-    // Schedule cron job: every day at 9 AM to send fee reminders
+    // Daily cron job at 9 AM
     cron.schedule('0 9 * * *', async () => {
-      console.log('⏰ Running daily fee reminder cron job...');
-      const { sendFeeReminders } = require('./controllers/feesController');
-      await sendFeeReminders();
+      console.log('⏰ Running daily reminders...');
+
+      try {
+        // Existing SMS reminders
+        const { sendFeeReminders } = require('./controllers/feesController');
+        await sendFeeReminders();
+
+        // Push notification reminders
+        const Student = require('./models/Student');
+
+        const currentMonth = new Date().toISOString().slice(0, 7);
+
+        const students = await Student.find({
+          isActive: true,
+          parentFcmToken: { $ne: '' }
+        });
+
+        const unpaidStudents = students.filter(student =>
+          student.feesHistory.some(fee =>
+            fee.month === currentMonth &&
+            fee.status === 'unpaid'
+          )
+        );
+
+        // Send push notifications
+        await sendToMultiple(
+          unpaidStudents,
+          '💰 Fee Reminder',
+          `Your tuition fee for ${currentMonth} is pending. Please pay at the earliest.`,
+          'fee_reminder'
+        );
+
+        console.log(`📱 Push reminders sent to ${unpaidStudents.length} parents`);
+
+      } catch (error) {
+        console.error('❌ Cron job error:', error.message);
+      }
     });
+
   })
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err);

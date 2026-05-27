@@ -4,6 +4,18 @@ const Student = require('../models/Student');
 // @route   PUT /api/fees/:studentId/:month
 const updateFeeStatus = async (req, res) => {
   try {
+
+    const { sendToParent } = require('../services/notificationService');
+
+  // After saving paid status:
+     if (status === 'paid' && student.parentFcmToken) {
+      await sendToParent(
+        student.parentFcmToken,
+        'Fee Payment Confirmed',
+        `Fee of ₹${feeRecord.amount} for ${month} has been received. Thank you!`,
+        'fee_paid'
+      );
+    }
     const { studentId, month } = req.params;
     const { status } = req.body;
 

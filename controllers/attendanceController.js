@@ -4,6 +4,21 @@ const Student = require('../models/Student');
 // @route   POST /api/attendance/:studentId
 const markAttendance = async (req, res) => {
   try {
+    const { sendToParent } = require('../services/notificationService');
+
+// After student.save():
+  if (student.parentFcmToken) {
+    const statusText = status === 'present' ? 'Present ✅' : 'Absent ❌';
+    const dateText   = new Date(date).toLocaleDateString('en-IN', {
+      day: 'numeric', month: 'short'
+    });
+    await sendToParent(
+      student.parentFcmToken,
+      'Attendance Marked',
+      `${student.studentName} was marked ${statusText} on ${dateText}`,
+      'attendance'
+    );
+  }
     const { date, status } = req.body;
 
     if (!date || !status) {

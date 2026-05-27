@@ -4,6 +4,20 @@ const Student = require('../models/Student');
 // @route   POST /api/tests/:studentId
 const addTestResult = async (req, res) => {
   try {
+
+    const { sendToParent } = require('../services/notificationService');
+
+    // After student.save():
+    const pct = Math.round((Number(marksObtained) / Number(totalMarks)) * 100);
+    if (student.parentFcmToken) {
+      await sendToParent(
+        student.parentFcmToken,
+        'New Test Result Added',
+        `${student.studentName} scored ${pct}% in ${subject} (${marksObtained}/${totalMarks})`,
+        'test_result'
+      );
+    }
+    
     const { testDate, subject, chapterSyllabus, marksObtained, totalMarks, remarks } = req.body;
 
     if (!testDate || !subject || !chapterSyllabus || marksObtained === undefined || !totalMarks) {
