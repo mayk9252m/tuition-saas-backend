@@ -1,5 +1,4 @@
 const Student = require('../models/Student');
-const { sendToParent } = require('../services/notificationService');
 
 // @desc    Mark attendance for a student
 // @route   POST /api/attendance/:studentId
@@ -15,14 +14,17 @@ const markAttendance = async (req, res) => {
       return res.status(400).json({ message: 'Status must be present or absent' });
     }
 
-    const student = await Student.findOne({ _id: req.params.studentId, userId: req.user._id });
+    const student = await Student.findOne({
+      _id: req.params.studentId,
+      userId: req.user._id 
+    });
+
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
 
-    // Check if attendance already marked for this date
+    // Check if attendance already marked for this date (Update attendance)
     const existingIndex = student.attendance.findIndex(a => a.date === date);
-
     if (existingIndex > -1) {
       student.attendance[existingIndex].status = status;
     } else {
@@ -33,24 +35,29 @@ const markAttendance = async (req, res) => {
 
     // Send push notification to parent
     if (student.parentFcmToken) {
+      try {
+        const { sendToParent } = require('../services/notificationService');
+        const statusEmoji = status === 'present' ? '✅' : '❌';
+        const statusText = status === 'present' ? 'present' : 'absent';
 
-      const statusText =
-        status === 'present'
-          ? 'Present ✅'
-          : 'Absent ❌';
-
-      const dateText = new Date(date).toLocaleDateString('en-IN', {
-        day: 'numeric',
-        month: 'short'
-      });
-
-      await sendToParent(
+        // Format date to a more readable format
+        const dateParts = date.split ('-');
+        const months = [
+          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        ];
+        const formattedDate = `${dateParts[2]} ${months[parseInt(dateParts[1]) - 1]} ${dateParts[0]}`;
+        
+        await sendToParent(
         student.parentFcmToken,
-        'Attendance Marked',
-        `${student.studentName} was marked ${statusText} on ${dateText}`,
+        `${statusEmoji} Attendance Marked`,
+        `${student.studentName} was marked ${statusText} on ${formattedDate}`,
         'attendance'
       );
-    }
+      } catch (notifError) {
+        // Don't fail the request if notification fails
+        console.error('Attendance notification error:', notifError.message);
+      }
 
     res.json({
       success: true,

@@ -4,8 +4,18 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const cron = require('node-cron');
 
-const { sendToMultiple } = require('./services/notificationService');
+const { 
+  sendToMultiple,
+  initializeFirebase
+ } = require('./services/notificationService');
 
+// Initialize Firebase Admin on server start
+try {
+  initializeFirebase();
+  console.log('✅ Firebase Admin SDK initialized on server start');
+} catch (error) {
+  console.error('❌ Firebase Admin init failed on server start:', error.message);
+}
 
 dotenv.config();
 

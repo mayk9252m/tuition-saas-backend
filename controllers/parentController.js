@@ -24,6 +24,7 @@ const parentLogin = async (req, res) => {
     // Find student by WhatsApp number and active status
     const student = await Student.findOne({
       whatsappNumber: cleanNumber,
+      dateOfJoining: new Date(dateOfJoining),
       isActive: true
     });
 
