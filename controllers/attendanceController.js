@@ -58,6 +58,7 @@ const markAttendance = async (req, res) => {
         // Don't fail the request if notification fails
         console.error('Attendance notification error:', notifError.message);
       }
+    }
 
     res.json({
       success: true,
